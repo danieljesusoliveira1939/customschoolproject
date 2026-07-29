@@ -1,94 +1,120 @@
-*{
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-body{
-font-family: "Poppins", sans-serif;
-}
-header{
-background-color: #424e61;
-color: white;
-width: 100%;
-padding: 20px;
-}
-.cabecalho-itens{
-max-width: 1980px;
-margin: 0 auto;
-display: flex;
-align-items: center;
-justify-content: center;
-}
-.cabecalho-imagem{
-width: 10%;
-display: flex;
-justify-content: flex-start;
-align-items: center;
-}
-.titulo_site{
-padding: 50px;
-text-align: center;
-width: 50%;
-font: 30px;
-}
-.sociais{
-display: flex;
-justify-content: flex-end;
-width: 25%;
-padding-right: 30px;
-}
-.banner1{
-display: flex;
-justify-content: center;
-}
-.estudante_titulo{
-padding: 50px;
-text-align: center;
-
-}
-.estudante-nome{
-text-align: center;
-}
-.estudante-imagem{
-width: 120px;
-}
-.estudante-icone{
-width: 38px;
-padding: 4px 8px;
-}
-.estudante{
-background-image: background-color(#faae43);
-padding: 24px 0;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.estudante.div{
-text-align: center;
-padding: 24px 0;
-}
-.estudantes_todos{
-display: flex;
-justify-content: space-around;
-}
-.escola{
-background-image: linear-gradient(#40A2E3,#7FC2EF);
-color: white;
-display: flex;
-justify-content:center;
-padding: 24px 0;
-text-align:center;
-display:block;
-}
-.escola-titulo{
-padding: 50px;
-text-align: center;
-}
-.logo_rodape{
-height: 80px;
-padding: 12px 0;
-
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f7f5f0; /* Fundo geral em tom creme/off-white */
+    color: #4a5568; /* Texto em cinza-escuro suave */
 }
 
-.link{
-color: #ffffff;
-text-decoration: none;
+header {
+    background-color: #8da4b4; /* Azul pastel suave */
+    color: white;
+    width: 100%;
+    padding: 20px;
 }
+
+.cabecalho-itens {
+    max-width: 1980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap; /* Permite boa adaptação em telas menores */
+}
+
+.cabecalho-imagem {
+    width: 10%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.titulo_site {
+    padding: 20px 50px;
+    text-align: center;
+    width: 50%;
+    font-size: 30px; /* Corrigido de "font: 30px" para "font-size: 30px" */
+    color: #ffffff;
+}
+
+/* --- ESTILIZAÇÃO DO VÍDEO NO HEADER --- */
+.container-video {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto 0 auto;
+    background-color: #f0e6df; /* Bege/Rosa pastel bem suave */
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.titulo-video {
+    color: #5a6b7c;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.container-video iframe {
+    width: 100%;
+    max-width: 560px;
+    height: 315px;
+    border-radius: 8px;
+    border: none;
+}
+
+.sociais {
+    display: flex;
+    justify-content: flex-end;
+    width: 25%;
+    padding-right: 30px;
+}
+
+.banner1 {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* --- SEÇÃO DAS ÁRVORES PECULIARES --- */
+.estudante {
+    background-color: #f3e5d8; /* Pêssego/Areia pastel suave */
+    padding: 40px 0;
+}
+
+.estudante_titulo {
+    padding: 20px 50px 40px 50px;
+    text-align: center;
+    color: #5b6e60; /* Verde-sálvia suave */
+    font-size: 32px;
+}
+
+.estudantes_todos {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Corrigido o seletor de ".estudante.div" para ".estudante-div" */
+.estudante-div {
+    text-align: center;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+    width: 280px;
+    transition: transform 0.2s ease;
+}
+
+.estudante-div:hover {
+    transform: translateY(-5px);
+}
+
+.estudante-

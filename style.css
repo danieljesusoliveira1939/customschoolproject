@@ -6,12 +6,12 @@
 
 body {
     font-family: "Poppins", sans-serif;
-    background-color: #f7f5f0; /* Fundo geral em tom creme/off-white */
-    color: #4a5568; /* Texto em cinza-escuro suave */
+    background-color: #f4f0ea; /* Fundo geral em bege suave/areia */
+    color: #3b2f2f; /* Texto em marrom escuro tronco */
 }
 
 header {
-    background-color: #8da4b4; /* Azul pastel suave */
+    background-color: #2d4a22; /* Verde floresta fechado */
     color: white;
     width: 100%;
     padding: 20px;
@@ -23,11 +23,12 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap; /* Permite boa adaptação em telas menores */
+    flex-wrap: wrap;
 }
 
-.cabecalho-imagem {
+.cabecalho_imagem {
     width: 10%;
+    min-width: 80px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -37,7 +38,7 @@ header {
     padding: 20px 50px;
     text-align: center;
     width: 50%;
-    font-size: 30px; /* Corrigido de "font: 30px" para "font-size: 30px" */
+    font-size: 30px;
     color: #ffffff;
 }
 
@@ -46,15 +47,15 @@ header {
     width: 100%;
     max-width: 600px;
     margin: 20px auto 0 auto;
-    background-color: #f0e6df; /* Bege/Rosa pastel bem suave */
+    background-color: #5c4033; /* Marrom madeira */
     padding: 20px;
     border-radius: 12px;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .titulo-video {
-    color: #5a6b7c;
+    color: #f4f0ea; /* Texto claro no fundo marrom */
     font-size: 1.2rem;
     margin-bottom: 15px;
 }
@@ -80,16 +81,22 @@ header {
     margin: 20px 0;
 }
 
+.escola-image {
+    max-width: 90%;
+    height: auto;
+    border-radius: 8px;
+}
+
 /* --- SEÇÃO DAS ÁRVORES PECULIARES --- */
 .estudante {
-    background-color: #f3e5d8; /* Pêssego/Areia pastel suave */
+    background-color: #e2d7c5; /* Tom terroso claro / tronco seco */
     padding: 40px 0;
 }
 
 .estudante_titulo {
     padding: 20px 50px 40px 50px;
     text-align: center;
-    color: #5b6e60; /* Verde-sálvia suave */
+    color: #2d4a22; /* Verde floresta */
     font-size: 32px;
 }
 
@@ -102,19 +109,67 @@ header {
     margin: 0 auto;
 }
 
-/* Corrigido o seletor de ".estudante.div" para ".estudante-div" */
 .estudante-div {
     text-align: center;
     padding: 20px;
     background-color: #ffffff;
+    border: 1px solid #c8b9a6;
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
     width: 280px;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .estudante-div:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-.estudante-
+.estudante-imagem {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.estudante-nome {
+    text-align: center;
+    color: #3e5c30; /* Verde folha */
+    font-size: 18px;
+}
+
+.estudante-icone {
+    width: 38px;
+    padding: 4px 8px;
+}
+
+/* --- RODAPÉ --- */
+.escola {
+    background-color: #3b2f2f; /* Marrom escuro */
+    color: #ffffff;
+    padding: 30px 0;
+    text-align: center;
+}
+
+.escola-titulo {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.logo_rodape {
+    height: 80px;
+    padding: 12px 0;
+}
+
+.link {
+    color: #a3c995; /* Verde claro em destaque nos links */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+    }
+    

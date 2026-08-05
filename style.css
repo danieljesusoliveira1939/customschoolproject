@@ -104,9 +104,15 @@ header {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 10px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Regra nova: Aplica o tamanho nos itens filhos */
+.estudantes_todos > * {
+  flex: 1 1 calc(33.33% - 20px); 
+  max-width: calc(33.33% - 20px);
 }
 
 .estudante-div {

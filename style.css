@@ -40,33 +40,41 @@ header {
     width: 50%;
     font-size: 30px;
     color: #ffffff;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px; /* Cria um espaço antes de começar o vídeo */
+
 }
 
 /* --- ESTILIZAÇÃO DO VÍDEO NO HEADER --- */
 .container-video {
     width: 100%;
     max-width: 600px;
-    margin: 20px auto 0 auto;
-    background-color: #5c4033; /* Marrom madeira */
+    margin: 20px auto 0 auto; /* 20px de espaço acima (separando do título) e centralizado nos lados */
+    background-color: #5c4033; 
     padding: 20px;
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box; 
 }
 
 .titulo-video {
-    color: #f4f0ea; /* Texto claro no fundo marrom */
+    color: #f4f0ea; 
     font-size: 1.2rem;
     margin-bottom: 15px;
 }
 
 .container-video iframe {
-    width: 100%;
-    max-width: 560px;
-    height: 315px;
+    width: 100%;             
+    max-width: 560px;        
+    height: auto;            
+    aspect-ratio: 16 / 9;    
     border-radius: 8px;
     border: none;
+    display: inline-block; 
 }
+
 
 .sociais {
     display: flex;

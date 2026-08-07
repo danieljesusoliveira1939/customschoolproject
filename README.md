@@ -1,2 +1,2 @@
 # customschoolproject
-one customable project make to me
+one customable project make by me

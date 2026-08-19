@@ -6,15 +6,47 @@
 
 body {
     font-family: "Poppins", sans-serif;
-    background-color: #f4f0ea; /* Fundo geral em bege suave/areia */
-    color: #3b2f2f; /* Texto em marrom escuro tronco */
+    background-color: #f4f0ea; 
 }
 
 header {
-    background-color: #2d4a22; /* Verde floresta fechado */
+    background-color: #2d4a22;
     color: white;
     width: 100%;
     padding: 20px;
+}
+.navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1e3317;
+    padding: 15px 30px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.navbar .logo {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: #f4f0ea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: #a3c995;
 }
 
 .cabecalho-itens {
@@ -42,15 +74,13 @@ header {
     color: #ffffff;
     text-align: center;
     width: 100%;
-    margin-bottom: 20px; /* Cria um espaço antes de começar o vídeo */
-
+    margin-bottom: 20px;
 }
 
-/* --- ESTILIZAÇÃO DO VÍDEO NO HEADER --- */
 .container-video {
     width: 100%;
     max-width: 600px;
-    margin: 20px auto 0 auto; /* 20px de espaço acima (separando do título) e centralizado nos lados */
+    margin: 20px auto 0 auto; 
     background-color: #5c4033; 
     padding: 20px;
     border-radius: 12px;

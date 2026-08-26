@@ -73,6 +73,7 @@ header {
       display: block;
       border-radius: 8px; /* Opcional: cantos arredondados */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Opcional: sombra leve */
+      align-items:center
     }
 
 .cabecalho_imagem {

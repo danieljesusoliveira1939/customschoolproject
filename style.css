@@ -58,6 +58,23 @@ header {
     flex-wrap: wrap;
 }
 
+.img-container {
+      width: 100%;
+      max-width: 1000px; /* Altere para o tamanho máximo desejado */
+      margin: 0 auto;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    /* Regra principal para imagem responsiva */
+    .responsive-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px; /* Opcional: cantos arredondados */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Opcional: sombra leve */
+    }
+
 .cabecalho_imagem {
     width: 10%;
     min-width: 80px;

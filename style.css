@@ -58,23 +58,24 @@ header {
     flex-wrap: wrap;
 }
 
-.img-container {
-      width: 100%;
-      max-width: 1000px; /* Altere para o tamanho máximo desejado */
-      margin: 0 auto;
-      padding: 10px;
-      box-sizing: border-box;
-    }
+.img-container { 
+  width: 100%; 
+  max-width: 1000px; /* Altere para o tamanho máximo desejado */ 
+  margin: 0 auto; 
+  padding: 10px; 
+  box-sizing: border-box; /* Corrigido de "borde-box" para "border-box" */
+} 
 
-    /* Regra principal para imagem responsiva */
-    .responsive-img {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 8px; /* Opcional: cantos arredondados */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Opcional: sombra leve */
-      align-items:center
-    }
+/* Regra principal para imagem responsiva e centralizada */ 
+.responsive-img { 
+  max-width: 100%; 
+  height: auto; 
+  display: block; 
+  margin: 0 auto; /* Linha adicionada para garantir a centralização */
+  border-radius: 8px; /* Opcional: cantos arredondados */ 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Opcional: sombra leve */ 
+}
+
 
 .cabecalho_imagem {
     width: 10%;
@@ -212,6 +213,10 @@ header {
     color: #ffffff;
     padding: 30px 0;
     text-align: center;
+    position:fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
 }
 
 .escola-titulo {

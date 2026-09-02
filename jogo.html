@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coletor de Maçãs</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #2b2b2b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        h1 {
+            margin: 5px 0;
+            font-size: 24px;
+        }
+        canvas {
+           background-image: url('image.html');
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        .instructions {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🍎 Coletor de Maçãs 🍎</h1>
+    <canvas id="gameCanvas" width="480" height="640"></canvas>
+    <div class="instructions">Use as setas do teclado <b>Esquerda</b> e <b>Direita</b> para mover a cesta.</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Estado do Jogo
+        let score = 0;
+        let lives = 3;
+        let gameOver = false;
+
+        // Cesta do jogador
+        const basket = {
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 60,
+            width: 100,
+            height: 25,
+            speed: 8,
+            dx: 0
+        };
+
+        // Maçãs
+        let apples = [];
+        let spawnTimer = 0;
+        const spawnInterval = 40; // Frequência que as maçãs caem
+
+        // Controles de Teclado
+        let keys = {
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "ArrowLeft") keys.ArrowLeft = true;
+            if (e.code === "ArrowRight") keys.ArrowRight = true;
+            if (e.code === "Space" && gameOver) resetGame();
+        });
+
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "ArrowLeft") keys.ArrowLeft = false;
+            if (e.code === "ArrowRight") keys.ArrowRight = false;
+        });
+
+        function spawnApple() {
+            const radius = 15;
+            const x = Math.random() * (canvas.width - radius * 2) + radius;
+            const y = -radius;
+            // A velocidade aumenta levemente conforme a pontuação sobe
+            const speed = 2.5 + Math.random() * 2 + (score * 0.05);
+            apples.push({ x, y, radius, speed });
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            // Movimento da Cesta
+            if (keys.ArrowLeft) basket.x -= basket.speed;
+            if (keys.ArrowRight) basket.x += basket.speed;
+
+            // Limites da tela para a cesta
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x + basket.width > canvas.width) basket.x = canvas.width - basket.width;
+
+            // Gerar maçãs
+            spawnTimer++;
+            if (spawnTimer >= spawnInterval) {
+                spawnApple();
+                spawnTimer = 0;
+            }
+
+            // Atualizar posições das maçãs
+            for (let i = apples.length - 1; i >= 0; i--) {
+                let apple = apples[i];
+                apple.y += apple.speed;
+
+                // Colisão com a cesta
+                if (
+                    apple.y + apple.radius >= basket.y &&
+                    apple.x >= basket.x &&
+                    apple.x <= basket.x + basket.width &&
+                    apple.y - apple.radius <= basket.y + basket.height
+                ) {
+                    score++;
+                    apples.splice(i, 1);
+                    continue;
+                }
+
+                // Maçã caiu no chão (perde vida)
+                if (apple.y - apple.radius > canvas.height) {
+                    apples.splice(i, 1);
+                    lives--;
+                    if (lives <= 0) {
+                        gameOver = true;
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Limpar tela
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar Cesta
+            ctx.fillStyle = "#8B4513";
+            ctx.beginPath();
+            ctx.roundRect(basket.x, basket.y, basket.width, basket.height, [0, 0, 10, 10]);
+            ctx.fill();
+            ctx.strokeStyle = "#5C2E0B";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Desenhar Maçãs
+            apples.forEach(apple => {
+                ctx.fillStyle = "#e74c3c";
+                ctx.beginPath();
+                ctx.arc(apple.x, apple.y, apple.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#c0392b";
+                ctx.stroke();
+
+                // Cabinho da maçã
+                ctx.strokeStyle = "#27ae60";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(apple.x, apple.y - apple.radius);
+                ctx.quadraticCurveTo(apple.x + 5, apple.y - apple.radius - 8, apple.x + 8, apple.y - apple.radius - 4);
+                ctx.stroke();
+            });
+
+            // Placar e Vidas
+            ctx.fillStyle = "#333";
+            ctx.font = "bold 18px Arial";
+            ctx.fillText(`Pontos: ${score}`, 20, 30);
+            ctx.fillText(`Vidas: ${'🍎'.repeat(lives)}`, canvas.width - 130, 30);
+
+            // Tela de Game Over
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 32px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 - 30);
+
+                ctx.font = "18px Arial";
+                ctx.fillText(`Pontuação Final: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillText("Pressione [ESPAÇO] para Recomeçar", canvas.width / 2, canvas.height / 2 + 50);
+                ctx.textAlign = "left"; // resetar alinhamento
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            apples = [];
+            spawnTimer = 0;
+            gameOver = false;
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>

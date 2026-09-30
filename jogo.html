@@ -3,212 +3,1217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coletor de Maçãs</title>
+    <title>Apple Seed Defender</title>
+    <!-- Tailwind CSS for UI Overlay -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        body, html {
             margin: 0;
             padding: 0;
-            background: #2b2b2b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background-color: #1a2e1a;
+            color: #ffffff;
         }
-        h1 {
-            margin: 5px 0;
-            font-size: 24px;
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
+
         canvas {
-           background-image: url('image.png');
-background-size: cover;
-background-position: center;
-background-repeat: no-repeat;
-            border: 4px solid #fff;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #2d5a27, #1e3d1a);
         }
-        .instructions {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #bbb;
+
+        /* Glassmorphic UI styles */
+        .glass-panel {
+            background: rgba(20, 35, 20, 0.85);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(74, 158, 63, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+            border-bottom: 4px solid #15803d;
+            transition: all 0.1s ease;
+        }
+        .btn-green:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .btn-green:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-top: 4px;
+        }
+
+        .btn-amber {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            border-bottom: 4px solid #b45309;
+            transition: all 0.1s ease;
+        }
+        .btn-amber:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .btn-amber:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-top: 4px;
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+            border-bottom: 4px solid #991b1b;
+            transition: all 0.1s ease;
+        }
+        .btn-red:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .btn-red:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-top: 4px;
+        }
+
+        /* Custom Scrollbar for Shop */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4ade80;
+            border-radius: 4px;
+        }
+
+        /* Keyframe Animations */
+        @keyframes pulse-reload {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        .reload-pulse {
+            animation: pulse-reload 0.8s infinite;
         }
     </style>
 </head>
 <body>
+    <div id="game-container">
+        <!-- Canvas for Game Render -->
+        <canvas id="gameCanvas"></canvas>
 
-    <h1>🍎 Coletor de Maçãs 🍎</h1>
-    <canvas id="gameCanvas" width="480" height="640"></canvas>
-    <div class="instructions">Use as setas do teclado <b>Esquerda</b> e <b>Direita</b> para mover a cesta.</div>
+        <!-- HUD (In-Game Overlay) -->
+        <div id="hud" class="hidden absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+            <!-- Top Bar -->
+            <div class="flex justify-between items-start w-full">
+                <!-- Player Health & Ammo -->
+                <div class="flex flex-col gap-2 pointer-events-auto">
+                    <!-- Health Bar -->
+                    <div class="glass-panel p-2 rounded-xl flex items-center gap-3 w-64">
+                        <span class="text-2xl">❤️</span>
+                        <div class="w-full bg-gray-800 h-5 rounded-full overflow-hidden border border-gray-600">
+                            <div id="hp-bar-fill" class="bg-red-500 h-full w-full transition-all duration-200"></div>
+                        </div>
+                        <span id="hp-text" class="text-sm font-bold min-w-[45px]">100/100</span>
+                    </div>
+
+                    <!-- Ammo & Reload Indicator -->
+                    <div class="glass-panel p-2 rounded-xl flex items-center justify-between w-64">
+                        <div class="flex items-center gap-2">
+                            <span id="hud-apple-icon" class="text-2xl">🍎</span>
+                            <div class="flex flex-col">
+                                <span class="text-xs text-gray-300">Sementes</span>
+                                <span id="ammo-text" class="text-xl font-bold tracking-wider text-green-400">10 / 10</span>
+                            </div>
+                        </div>
+                        <button id="reload-btn" onclick="triggerReload()" class="pointer-events-auto btn-amber text-xs px-3 py-2 rounded-lg font-bold text-white flex items-center gap-1">
+                            <span>COMER</span> <span class="bg-black/30 px-1.5 py-0.5 rounded">[R]</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Boss HP Bar (Visible only on Boss Rounds) -->
+                <div id="boss-hp-container" class="hidden flex-col items-center w-1/3 max-w-md glass-panel p-3 rounded-2xl border-red-500 border-2">
+                    <div class="flex justify-between w-full mb-1">
+                        <span id="boss-name" class="font-bold text-red-400 text-sm uppercase tracking-wide">CHEFÃO LENHADOR</span>
+                        <span id="boss-hp-text" class="font-bold text-sm">1000/1000</span>
+                    </div>
+                    <div class="w-full bg-gray-900 h-6 rounded-full overflow-hidden border border-red-800">
+                        <div id="boss-hp-fill" class="bg-gradient-to-r from-red-600 to-amber-500 h-full w-full transition-all duration-150"></div>
+                    </div>
+                </div>
+
+                <!-- Score, Round and Coins Info -->
+                <div class="glass-panel p-3 rounded-xl flex flex-col gap-1 items-end min-w-[160px]">
+                    <div class="text-amber-400 font-bold flex items-center gap-1 text-lg">
+                        <span>🍎</span> <span id="hud-coins">0</span>
+                    </div>
+                    <div class="text-xs text-gray-300">Round: <span id="hud-round" class="text-white font-bold text-sm">1</span></div>
+                    <div class="text-xs text-gray-300">Pontos: <span id="hud-score" class="text-white font-bold text-sm">0</span></div>
+                    <div class="text-[10px] text-gray-400">Inimigos: <span id="hud-enemies" class="text-gray-200 font-bold">0</span></div>
+                </div>
+            </div>
+
+            <!-- Audio Toggle & Mobile Reload Prompt -->
+            <div class="flex justify-between items-end pointer-events-auto">
+                <button id="sound-btn" onclick="toggleAudio()" class="glass-panel px-3 py-2 rounded-xl text-xl hover:bg-white/10 transition">
+                    🔊
+                </button>
+                <div id="reload-prompt" class="hidden glass-panel px-4 py-2 rounded-xl text-amber-400 font-bold text-sm border border-amber-500/50 reload-pulse">
+                    ⚠️ Sem sementes! Aperte 'R' ou clique em COMER!
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN MENU OVERLAY -->
+        <div id="main-menu" class="absolute inset-0 flex items-center justify-center p-4 bg-black/60">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full text-center flex flex-col items-center border-2 border-green-500/40 shadow-2xl">
+                <!-- Title & Icon -->
+                <div class="relative mb-2">
+                    <span class="text-6xl sm:text-7xl">🌳</span>
+                    <span class="text-3xl absolute -bottom-1 -right-2">🪓</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-200 mb-1">
+                    Apple Seed Defender
+                </h1>
+                <p class="text-xs text-green-300/80 mb-6">Proteja a floresta Sagrada dos Lenhadores!</p>
+
+                <!-- High Score & Coins Stats -->
+                <div class="grid grid-cols-2 gap-3 w-full mb-6">
+                    <div class="bg-black/30 p-3 rounded-2xl border border-white/10">
+                        <div class="text-xs text-gray-400">Maior Pontuação</div>
+                        <div id="menu-highscore" class="text-xl font-bold text-amber-400">0</div>
+                    </div>
+                    <div class="bg-black/30 p-3 rounded-2xl border border-white/10">
+                        <div class="text-xs text-gray-400">Suas Maçãs</div>
+                        <div id="menu-coins" class="text-xl font-bold text-red-400 flex items-center justify-center gap-1">
+                            <span>🍎</span> <span id="menu-coins-val">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-3 w-full">
+                    <button onclick="startGame()" class="btn-green py-3.5 text-lg font-bold rounded-2xl text-white shadow-lg tracking-wide uppercase">
+                        ▶ Iniciar Jogo
+                    </button>
+                    <button onclick="openShop()" class="btn-amber py-3 text-md font-bold rounded-2xl text-white shadow-lg uppercase flex items-center justify-center gap-2">
+                        <span>🛒</span> Loja de Skins
+                    </button>
+                </div>
+
+                <!-- Instructions -->
+                <div class="mt-6 text-xs text-gray-400 bg-black/20 p-3 rounded-xl w-full text-left">
+                    <p class="font-bold text-gray-300 mb-1">🎮 Como Jogar:</p>
+                    <p>• <b>Mirar & Atirar:</b> Use o Mouse / Toque na tela</p>
+                    <p>• <b>Mover:</b> Teclas A/D ou Setas Esquerda/Direita</p>
+                    <p>• <b>Recarregar:</b> Tecla 'R' ou botão COMER para mastigar maçã</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SHOP OVERLAY -->
+        <div id="shop-menu" class="hidden absolute inset-0 flex items-center justify-center p-4 bg-black/75 z-20">
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl max-w-2xl w-full flex flex-col h-[85vh] border-2 border-amber-500/40">
+                <!-- Shop Header -->
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="text-3xl">🛒</span>
+                        <h2 class="text-2xl font-bold text-amber-400">Loja da Floresta</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="bg-black/40 px-3 py-1.5 rounded-xl border border-amber-500/30 text-amber-300 font-bold flex items-center gap-1">
+                            <span>🍎</span> <span id="shop-coins-val">0</span>
+                        </div>
+                        <button onclick="closeShop()" class="bg-red-500/80 hover:bg-red-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shop Tabs -->
+                <div class="flex gap-2 mb-4">
+                    <button id="tab-lumberjack" onclick="switchShopTab('lumberjack')" class="flex-1 py-2 rounded-xl font-bold text-sm bg-green-600 text-white border border-green-400/50">
+                        🪓 Inimigos
+                    </button>
+                    <button id="tab-seed" onclick="switchShopTab('seed')" class="flex-1 py-2 rounded-xl font-bold text-sm bg-black/40 text-gray-300 border border-white/10">
+                        🌱 Sementes
+                    </button>
+                    <button id="tab-apple" onclick="switchShopTab('apple')" class="flex-1 py-2 rounded-xl font-bold text-sm bg-black/40 text-gray-300 border border-white/10">
+                        🍎 Maçã / Recarga
+                    </button>
+                </div>
+
+                <!-- Shop Content Cards Container -->
+                <div id="shop-items-container" class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3 pr-1">
+                    <!-- Dynamic items rendered by JS -->
+                </div>
+
+                <!-- Close Button -->
+                <div class="mt-4 pt-3 border-t border-white/10 text-center">
+                    <button onclick="closeShop()" class="btn-green w-full py-2.5 rounded-xl font-bold uppercase text-sm">
+                        Voltar ao Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER OVERLAY -->
+        <div id="game-over-menu" class="hidden absolute inset-0 flex items-center justify-center p-4 bg-black/80 z-30">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full text-center flex flex-col items-center border-2 border-red-500/50">
+                <span class="text-6xl mb-2">🪓💥</span>
+                <h2 class="text-3xl font-extrabold text-red-500 mb-1">A Floresta Caiu!</h2>
+                <p class="text-xs text-gray-400 mb-6">Os lenhadores desmataram sua defesa...</p>
+
+                <div class="bg-black/40 p-4 rounded-2xl border border-white/10 w-full flex flex-col gap-2 mb-6 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Pontuação Final:</span>
+                        <span id="go-score" class="font-bold text-amber-400">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Rounds Sobrevividos:</span>
+                        <span id="go-round" class="font-bold text-white">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Maçãs Coletadas:</span>
+                        <span id="go-coins" class="font-bold text-red-400">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 w-full">
+                    <button onclick="startGame()" class="btn-green py-3.5 text-md font-bold rounded-2xl text-white uppercase">
+                        🔄 Tentar Novamente
+                    </button>
+                    <button onclick="returnToMenu()" class="btn-amber py-3 text-md font-bold rounded-2xl text-white uppercase">
+                        🏠 Menu Principal & Loja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Estado do Jogo
-        let score = 0;
-        let lives = 3;
-        let gameOver = false;
-
-        // Cesta do jogador
-        const basket = {
-            x: canvas.width / 2 - 50,
-            y: canvas.height - 60,
-            width: 100,
-            height: 25,
-            speed: 8,
-            dx: 0
-        };
-
-        // Maçãs
-        let apples = [];
-        let spawnTimer = 0;
-        const spawnInterval = 40; // Frequência que as maçãs caem
-
-        // Controles de Teclado
-        let keys = {
-            ArrowLeft: false,
-            ArrowRight: false
-        };
-
-        window.addEventListener("keydown", (e) => {
-            if (e.code === "ArrowLeft") keys.ArrowLeft = true;
-            if (e.code === "ArrowRight") keys.ArrowRight = true;
-            if (e.code === "Space" && gameOver) resetGame();
-        });
-
-        window.addEventListener("keyup", (e) => {
-            if (e.code === "ArrowLeft") keys.ArrowLeft = false;
-            if (e.code === "ArrowRight") keys.ArrowRight = false;
-        });
-
-        function spawnApple() {
-            const radius = 15;
-            const x = Math.random() * (canvas.width - radius * 2) + radius;
-            const y = -radius;
-            // A velocidade aumenta levemente conforme a pontuação sobe
-            const speed = 2.5 + Math.random() * 2 + (score * 0.05);
-            apples.push({ x, y, radius, speed });
-        }
-
-        function update() {
-            if (gameOver) return;
-
-            // Movimento da Cesta
-            if (keys.ArrowLeft) basket.x -= basket.speed;
-            if (keys.ArrowRight) basket.x += basket.speed;
-
-            // Limites da tela para a cesta
-            if (basket.x < 0) basket.x = 0;
-            if (basket.x + basket.width > canvas.width) basket.x = canvas.width - basket.width;
-
-            // Gerar maçãs
-            spawnTimer++;
-            if (spawnTimer >= spawnInterval) {
-                spawnApple();
-                spawnTimer = 0;
+        /* -------------------------------------------------------------------------- */
+        /* AUDIO SYNTHESIZER (Web Audio API)                                          */
+        /* -------------------------------------------------------------------------- */
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
             }
 
-            // Atualizar posições das maçãs
-            for (let i = apples.length - 1; i >= 0; i--) {
-                let apple = apples[i];
-                apple.y += apple.speed;
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
 
-                // Colisão com a cesta
-                if (
-                    apple.y + apple.radius >= basket.y &&
-                    apple.x >= basket.x &&
-                    apple.x <= basket.x + basket.width &&
-                    apple.y - apple.radius <= basket.y + basket.height
-                ) {
-                    score++;
-                    apples.splice(i, 1);
+            playShoot() {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playReload() {
+                if (!this.enabled || !this.ctx) return;
+                // Crunching sound
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        if (!this.ctx) return;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(120 + Math.random() * 80, this.ctx.currentTime);
+                        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.08);
+                    }, i * 90);
+                }
+            }
+
+            playHit() {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playBoss() {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(180, this.ctx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.45);
+            }
+        }
+
+        const sounds = new SoundSystem();
+
+        function toggleAudio() {
+            sounds.enabled = !sounds.enabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerText = sounds.enabled ? '🔊' : '🔇';
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* SHOP & PERSISTENCE DATA                                                   */
+        /* -------------------------------------------------------------------------- */
+        const SKINS_DATA = {
+            lumberjack: [
+                { id: 'classic', name: 'Lenhador Clássico', price: 0, color: '#dc2626', hat: '#991b1b', desc: 'O clássico cortador de árvores com camisa xadrez.' },
+                { id: 'viking', name: 'Lenhador Viking', price: 50, color: '#d97706', hat: '#92400e', desc: 'Barba ruiva e machado duplo nordico!' },
+                { id: 'robot', name: 'Cyber Lenhador 3000', price: 120, color: '#0284c7', hat: '#38bdf8', desc: 'Mecânico e implacável com machado laser.' },
+                { id: 'fire', name: 'Lenhador de Fogo', price: 250, color: '#ea580c', hat: '#f97316', desc: 'Nascido nas brasas da floresta queimada.' }
+            ],
+            seed: [
+                { id: 'classic', name: 'Semente Tradicional', price: 0, color: '#78350f', glow: null, speed: 12, damage: 25, desc: 'Semente comum de maçã. Confiável.' },
+                { id: 'golden', name: 'Semente Dourada', price: 60, color: '#fbbf24', glow: '#fef08a', speed: 14, damage: 35, desc: '+10% Dano extra e tiro mais rápido!' },
+                { id: 'plasma', name: 'Semente de Plasma', price: 150, color: '#a855f7', glow: '#e9d5ff', speed: 16, damage: 45, desc: 'Energia concentrada para atravessar cascas!' },
+                { id: 'star', name: 'Semente Mágica Estelar', price: 300, color: '#38bdf8', glow: '#ffffff', speed: 18, damage: 60, desc: 'Poder cósmico natural devastador!' }
+            ],
+            apple: [
+                { id: 'red', name: 'Maçã Vermelha', price: 0, emoji: '🍎', maxAmmo: 10, color: '#ef4444', desc: 'Maçã standard suculenta. Cap: 10 sementes.' },
+                { id: 'green', name: 'Maçã Verde', price: 40, emoji: '🍏', maxAmmo: 12, color: '#22c55e', desc: 'Ácida e revitalizante! Cap: 12 sementes.' },
+                { id: 'gold', name: 'Maçã Dourada', price: 120, emoji: '🌟', maxAmmo: 15, color: '#eab308', desc: 'Rara e nutritiva. Cap: 15 sementes.' },
+                { id: 'crystal', name: 'Maçã de Cristal', price: 250, emoji: '💎', maxAmmo: 20, color: '#06b6d4', desc: 'Mística! Cap máxima de 20 sementes.' }
+            ]
+        };
+
+        let playerData = {
+            coins: 0,
+            highScore: 0,
+            unlockedSkins: {
+                lumberjack: ['classic'],
+                seed: ['classic'],
+                apple: ['red']
+            },
+            activeSkins: {
+                lumberjack: 'classic',
+                seed: 'classic',
+                apple: 'red'
+            }
+        };
+
+        function loadStorage() {
+            const saved = localStorage.getItem('apple_seed_defender_save');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    playerData = { ...playerData, ...parsed };
+                } catch (e) {
+                    console.error('Error loading save:', e);
+                }
+            }
+            updateMenuUI();
+        }
+
+        function saveStorage() {
+            localStorage.setItem('apple_seed_defender_save', JSON.stringify(playerData));
+            updateMenuUI();
+        }
+
+        function updateMenuUI() {
+            document.getElementById('menu-highscore').innerText = playerData.highScore;
+            document.getElementById('menu-coins-val').innerText = playerData.coins;
+            document.getElementById('shop-coins-val').innerText = playerData.coins;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* SHOP SYSTEM INTERACTION                                                    */
+        /* -------------------------------------------------------------------------- */
+        let currentShopTab = 'lumberjack';
+
+        function openShop() {
+            sounds.init();
+            document.getElementById('shop-menu').classList.remove('hidden');
+            renderShopItems();
+        }
+
+        function closeShop() {
+            document.getElementById('shop-menu').classList.add('hidden');
+        }
+
+        function switchShopTab(tab) {
+            currentShopTab = tab;
+            ['lumberjack', 'seed', 'apple'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "flex-1 py-2 rounded-xl font-bold text-sm bg-green-600 text-white border border-green-400/50";
+                } else {
+                    btn.className = "flex-1 py-2 rounded-xl font-bold text-sm bg-black/40 text-gray-300 border border-white/10";
+                }
+            });
+            renderShopItems();
+        }
+
+        function renderShopItems() {
+            const container = document.getElementById('shop-items-container');
+            container.innerHTML = '';
+
+            const items = SKINS_DATA[currentShopTab];
+            const unlockedList = playerData.unlockedSkins[currentShopTab];
+            const activeId = playerData.activeSkins[currentShopTab];
+
+            items.forEach(item => {
+                const isUnlocked = unlockedList.includes(item.id);
+                const isActive = activeId === item.id;
+
+                const card = document.createElement('div');
+                card.className = `bg-black/40 border ${isActive ? 'border-amber-400' : 'border-white/10'} p-3 rounded-2xl flex flex-col justify-between`;
+
+                let visualDisplay = '';
+                if (currentShopTab === 'apple') {
+                    visualDisplay = `<span class="text-4xl">${item.emoji}</span>`;
+                } else if (currentShopTab === 'seed') {
+                    visualDisplay = `<div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center" style="background:${item.color}; box-shadow: 0 0 10px ${item.glow || item.color}"></div>`;
+                } else {
+                    visualDisplay = `<div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xl" style="background:${item.color}">🪓</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="p-2 bg-black/30 rounded-xl flex items-center justify-center min-w-[50px] min-h-[50px]">
+                            ${visualDisplay}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm">${item.name}</h3>
+                            <p class="text-[11px] text-gray-400 leading-tight">${item.desc}</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-white/5 flex justify-between items-center">
+                        ${!isUnlocked ? `
+                            <span class="text-amber-400 font-bold text-xs flex items-center gap-1">🍎 ${item.price}</span>
+                            <button onclick="buySkin('${currentShopTab}', '${item.id}', ${item.price})" class="btn-amber text-xs px-3 py-1.5 rounded-lg font-bold">Comprar</button>
+                        ` : isActive ? `
+                            <span class="text-green-400 text-xs font-bold flex items-center gap-1">✓ Equipado</span>
+                            <button class="bg-gray-700 text-gray-400 text-xs px-3 py-1.5 rounded-lg font-bold cursor-default" disabled>Em Uso</button>
+                        ` : `
+                            <span class="text-gray-400 text-xs">Adquirido</span>
+                            <button onclick="equipSkin('${currentShopTab}', '${item.id}')" class="btn-green text-xs px-3 py-1.5 rounded-lg font-bold">Equipar</button>
+                        `}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function buySkin(category, id, price) {
+            if (playerData.coins >= price) {
+                playerData.coins -= price;
+                playerData.unlockedSkins[category].push(id);
+                playerData.activeSkins[category] = id;
+                saveStorage();
+                renderShopItems();
+            } else {
+                alert("Maçãs insuficientes! Jogue mais rounds para ganhar maçãs.");
+            }
+        }
+
+        function equipSkin(category, id) {
+            playerData.activeSkins[category] = id;
+            saveStorage();
+            renderShopItems();
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* GAME ENGINE & CANVAS RENDERER                                              */
+        /* -------------------------------------------------------------------------- */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize Canvas dynamically
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Game State Variables
+        let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+        let score = 0;
+        let round = 1;
+        let coinsEarnedThisRun = 0;
+        let enemiesToSpawn = 0;
+        let spawnTimer = 0;
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        // Player & Weapon Attributes
+        let player = {
+            x: 100,
+            y: canvas.height / 2,
+            radius: 35,
+            hp: 100,
+            maxHp: 100,
+            ammo: 10,
+            maxAmmo: 10,
+            isReloading: false,
+            reloadProgress: 0,
+            speed: 5,
+            moveUp: false,
+            moveDown: false,
+            moveLeft: false,
+            moveRight: false
+        };
+
+        // Game Entities Arrays
+        let projectiles = [];
+        let enemies = [];
+        let particles = [];
+        let floatingTexts = [];
+
+        /* -------------------------------------------------------------------------- */
+        /* INPUT HANDLERS                                                             */
+        /* -------------------------------------------------------------------------- */
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if (gameState === 'PLAYING' && e.button === 0) {
+                shootSeed();
+            }
+        });
+
+        // Touch support for mobile aiming & shooting
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            if (gameState === 'PLAYING' && e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+                // Avoid shooting if tapping UI elements
+                if (e.target.tagName !== 'BUTTON') {
+                    shootSeed();
+                }
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') player.moveUp = true;
+            if (key === 's' || key === 'arrowdown') player.moveDown = true;
+            if (key === 'a' || key === 'arrowleft') player.moveLeft = true;
+            if (key === 'd' || key === 'arrowright') player.moveRight = true;
+            if (key === 'r') triggerReload();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') player.moveUp = false;
+            if (key === 's' || key === 'arrowdown') player.moveDown = false;
+            if (key === 'a' || key === 'arrowleft') player.moveLeft = false;
+            if (key === 'd' || key === 'arrowright') player.moveRight = false;
+        });
+
+        /* -------------------------------------------------------------------------- */
+        /* GAME ACTIONS & LOGIC                                                        */
+        /* -------------------------------------------------------------------------- */
+        function startGame() {
+            sounds.init();
+            gameState = 'PLAYING';
+            score = 0;
+            round = 1;
+            coinsEarnedThisRun = 0;
+
+            // Apply equipped Apple skin stats
+            const activeAppleSkin = SKINS_DATA.apple.find(a => a.id === playerData.activeSkins.apple) || SKINS_DATA.apple[0];
+            player.maxAmmo = activeAppleSkin.maxAmmo;
+            player.ammo = player.maxAmmo;
+            player.hp = 100;
+            player.x = 120;
+            player.y = canvas.height / 2;
+
+            projectiles = [];
+            enemies = [];
+            particles = [];
+            floatingTexts = [];
+
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-over-menu').classList.add('hidden');
+            document.getElementById('shop-menu').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            document.getElementById('hud-apple-icon').innerText = activeAppleSkin.emoji;
+
+            startRound();
+            updateHUD();
+        }
+
+        function startRound() {
+            enemies = [];
+            const isBossRound = round % 5 === 0;
+
+            if (isBossRound) {
+                enemiesToSpawn = 1; // Only 1 Giant Boss
+                document.getElementById('boss-hp-container').classList.remove('hidden');
+                document.getElementById('boss-hp-container').classList.add('flex');
+                sounds.playBoss();
+            } else {
+                enemiesToSpawn = 5 + round * 3;
+                document.getElementById('boss-hp-container').classList.add('hidden');
+                document.getElementById('boss-hp-container').classList.remove('flex');
+            }
+            spawnTimer = 0;
+            updateHUD();
+        }
+
+        function shootSeed() {
+            if (player.isReloading) return;
+
+            if (player.ammo <= 0) {
+                document.getElementById('reload-prompt').classList.remove('hidden');
+                sounds.playHit();
+                return;
+            }
+
+            document.getElementById('reload-prompt').classList.add('hidden');
+            player.ammo--;
+
+            // Get Seed attributes based on equipped skin
+            const activeSeedSkin = SKINS_DATA.seed.find(s => s.id === playerData.activeSkins.seed) || SKINS_DATA.seed[0];
+
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            
+            projectiles.push({
+                x: player.x + Math.cos(angle) * 30,
+                y: player.y + Math.sin(angle) * 30,
+                vx: Math.cos(angle) * activeSeedSkin.speed,
+                vy: Math.sin(angle) * activeSeedSkin.speed,
+                radius: 6,
+                damage: activeSeedSkin.damage,
+                color: activeSeedSkin.color,
+                glow: activeSeedSkin.glow
+            });
+
+            sounds.playShoot();
+            updateHUD();
+        }
+
+        function triggerReload() {
+            if (player.isReloading || player.ammo === player.maxAmmo) return;
+
+            player.isReloading = true;
+            player.reloadProgress = 0;
+            document.getElementById('reload-prompt').classList.add('hidden');
+            sounds.playReload();
+
+            // Spawn mastication particles near player
+            for (let i = 0; i < 12; i++) {
+                particles.push({
+                    x: player.x + 10,
+                    y: player.y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    radius: Math.random() * 4 + 2,
+                    color: '#ef4444',
+                    life: 25
+                });
+            }
+        }
+
+        function spawnEnemy() {
+            const isBossRound = round % 5 === 0;
+
+            if (isBossRound) {
+                // BOSS SPAWN
+                enemies.push({
+                    isBoss: true,
+                    x: canvas.width + 100,
+                    y: canvas.height / 2,
+                    radius: 70,
+                    hp: 500 + round * 250,
+                    maxHp: 500 + round * 250,
+                    speed: 1.2,
+                    damage: 30,
+                    color: SKINS_DATA.lumberjack.find(l => l.id === playerData.activeSkins.lumberjack).color,
+                    attackTimer: 0
+                });
+            } else {
+                // REGULAR LUMBERJACK TYPES
+                const types = [
+                    { type: 'normal', speed: 2, hp: 40 + round * 5, radius: 26, damage: 10, score: 10 },
+                    { type: 'fast', speed: 3.5, hp: 25 + round * 3, radius: 20, damage: 7, score: 15 },
+                    { type: 'tank', speed: 1.2, hp: 90 + round * 10, radius: 34, damage: 20, score: 25 }
+                ];
+
+                // Pick type based on probability
+                let rand = Math.random();
+                let selected = types[0];
+                if (rand > 0.6) selected = types[1];
+                if (rand > 0.85) selected = types[2];
+
+                const spawnY = Math.random() * (canvas.height - 160) + 80;
+
+                enemies.push({
+                    isBoss: false,
+                    x: canvas.width + 50,
+                    y: spawnY,
+                    radius: selected.radius,
+                    hp: selected.hp,
+                    maxHp: selected.hp,
+                    speed: selected.speed,
+                    damage: selected.damage,
+                    scoreValue: selected.score,
+                    type: selected.type,
+                    color: SKINS_DATA.lumberjack.find(l => l.id === playerData.activeSkins.lumberjack).color
+                });
+            }
+        }
+
+        function addFloatingText(text, x, y, color = '#ffffff') {
+            floatingTexts.push({
+                text: text,
+                x: x,
+                y: y,
+                color: color,
+                alpha: 1,
+                vy: -1.5
+            });
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            sounds.playHit();
+
+            if (score > playerData.highScore) {
+                playerData.highScore = score;
+            }
+            playerData.coins += coinsEarnedThisRun;
+            saveStorage();
+
+            document.getElementById('go-score').innerText = score;
+            document.getElementById('go-round').innerText = round;
+            document.getElementById('go-coins').innerText = coinsEarnedThisRun;
+
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('game-over-menu').classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            gameState = 'MENU';
+            document.getElementById('game-over-menu').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+            updateMenuUI();
+        }
+
+        function updateHUD() {
+            document.getElementById('hp-bar-fill').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+            document.getElementById('hp-text').innerText = `${Math.ceil(player.hp)}/${player.maxHp}`;
+            document.getElementById('ammo-text').innerText = `${player.ammo} / ${player.maxAmmo}`;
+            document.getElementById('hud-round').innerText = round;
+            document.getElementById('hud-score').innerText = score;
+            document.getElementById('hud-coins').innerText = coinsEarnedThisRun;
+            document.getElementById('hud-enemies').innerText = enemiesToSpawn + enemies.length;
+
+            // Boss Bar Update
+            const boss = enemies.find(e => e.isBoss);
+            if (boss) {
+                document.getElementById('boss-hp-fill').style.width = `${Math.max(0, (boss.hp / boss.maxHp) * 100)}%`;
+                document.getElementById('boss-hp-text').innerText = `${Math.ceil(boss.hp)}/${boss.maxHp}`;
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* UPDATE & RENDER LOOP                                                      */
+        /* -------------------------------------------------------------------------- */
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // Player Movement Update
+            if (player.moveUp && player.y - player.radius > 20) player.y -= player.speed;
+            if (player.moveDown && player.y + player.radius < canvas.height - 20) player.y += player.speed;
+            if (player.moveLeft && player.x - player.radius > 20) player.x -= player.speed;
+            if (player.moveRight && player.x + player.radius < canvas.width / 3) player.x += player.speed;
+
+            // Reload Logic
+            if (player.isReloading) {
+                player.reloadProgress += 0.03;
+                if (player.reloadProgress >= 1) {
+                    player.isReloading = false;
+                    player.ammo = player.maxAmmo;
+                    updateHUD();
+                }
+            }
+
+            // Spawn Enemies Logic
+            if (enemiesToSpawn > 0) {
+                spawnTimer++;
+                const isBossRound = round % 5 === 0;
+                const interval = isBossRound ? 10 : Math.max(30, 90 - round * 4);
+                if (spawnTimer >= interval) {
+                    spawnEnemy();
+                    enemiesToSpawn--;
+                    spawnTimer = 0;
+                }
+            }
+
+            // Projectiles Update
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Create seed tail particles
+                if (Math.random() > 0.4) {
+                    particles.push({
+                        x: p.x,
+                        y: p.y,
+                        vx: (Math.random() - 0.5) * 1,
+                        vy: (Math.random() - 0.5) * 1,
+                        radius: Math.random() * 2 + 1,
+                        color: p.glow || p.color,
+                        life: 15
+                    });
+                }
+
+                // Remove out of screen
+                if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+                    projectiles.splice(i, 1);
                     continue;
                 }
 
-                // Maçã caiu no chão (perde vida)
-                if (apple.y - apple.radius > canvas.height) {
-                    apples.splice(i, 1);
-                    lives--;
-                    if (lives <= 0) {
-                        gameOver = true;
+                // Collision with Enemies
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    let e = enemies[j];
+                    const dist = Math.hypot(p.x - e.x, p.y - e.y);
+                    if (dist < p.radius + e.radius) {
+                        e.hp -= p.damage;
+                        sounds.playHit();
+
+                        // Floating Damage Numbers
+                        addFloatingText(`-${p.damage}`, e.x, e.y - 10, '#f87171');
+
+                        // Impact particles
+                        for (let k = 0; k < 6; k++) {
+                            particles.push({
+                                x: p.x,
+                                y: p.y,
+                                vx: (Math.random() - 0.5) * 5,
+                                vy: (Math.random() - 0.5) * 5,
+                                radius: Math.random() * 3 + 1,
+                                color: '#fca5a5',
+                                life: 20
+                            });
+                        }
+
+                        // Remove projectile
+                        projectiles.splice(i, 1);
+
+                        // Enemy Death
+                        if (e.hp <= 0) {
+                            if (e.isBoss) {
+                                score += 500;
+                                coinsEarnedThisRun += 25;
+                                addFloatingText('+25 🍎 BOSS DERROTADO!', e.x, e.y, '#fbbf24');
+                            } else {
+                                score += e.scoreValue;
+                                const coinReward = Math.random() > 0.5 ? 2 : 1;
+                                coinsEarnedThisRun += coinReward;
+                                addFloatingText(`+${coinReward} 🍎`, e.x, e.y, '#f87171');
+                            }
+
+                            // Death explosion particles
+                            for (let k = 0; k < 20; k++) {
+                                particles.push({
+                                    x: e.x,
+                                    y: e.y,
+                                    vx: (Math.random() - 0.5) * 8,
+                                    vy: (Math.random() - 0.5) * 8,
+                                    radius: Math.random() * 5 + 2,
+                                    color: e.color,
+                                    life: 35
+                                });
+                            }
+
+                            enemies.splice(j, 1);
+                        }
+
+                        updateHUD();
+                        break;
                     }
                 }
             }
-        }
 
-        function draw() {
-            // Limpar tela
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Enemies Update & Player Collision
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
 
-            // Desenhar Cesta
-            ctx.fillStyle = "#8B4513";
-            ctx.beginPath();
-            ctx.roundRect(basket.x, basket.y, basket.width, basket.height, [0, 0, 10, 10]);
-            ctx.fill();
-            ctx.strokeStyle = "#5C2E0B";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+                // Move towards player X
+                const angle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(angle) * e.speed;
+                e.y += Math.sin(angle) * e.speed * 0.5;
 
-            // Desenhar Maçãs
-            apples.forEach(apple => {
-                ctx.fillStyle = "#e74c3c";
-                ctx.beginPath();
-                ctx.arc(apple.x, apple.y, apple.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = "#c0392b";
-                ctx.stroke();
+                // Check collision with Player
+                const distToPlayer = Math.hypot(e.x - player.x, e.y - player.y);
+                if (distToPlayer < e.radius + player.radius) {
+                    player.hp -= e.damage;
+                    sounds.playHit();
+                    addFloatingText(`-${e.damage} HP`, player.x, player.y - 20, '#ef4444');
 
-                // Cabinho da maçã
-                ctx.strokeStyle = "#27ae60";
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(apple.x, apple.y - apple.radius);
-                ctx.quadraticCurveTo(apple.x + 5, apple.y - apple.radius - 8, apple.x + 8, apple.y - apple.radius - 4);
-                ctx.stroke();
-            });
+                    // Pushback enemy slightly
+                    e.x += 40;
 
-            // Placar e Vidas
-            ctx.fillStyle = "#333";
-            ctx.font = "bold 18px Arial";
-            ctx.fillText(`Pontos: ${score}`, 20, 30);
-            ctx.fillText(`Vidas: ${'🍎'.repeat(lives)}`, canvas.width - 130, 30);
+                    if (player.hp <= 0) {
+                        player.hp = 0;
+                        gameOver();
+                    }
+                    updateHUD();
+                }
 
-            // Tela de Game Over
-            if (gameOver) {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // If enemy passes player screen boundary
+                if (e.x < -50) {
+                    enemies.splice(i, 1);
+                    player.hp -= 15;
+                    addFloatingText('-15 DEFESA', player.x, player.y - 20, '#ef4444');
+                    if (player.hp <= 0) gameOver();
+                    updateHUD();
+                }
+            }
 
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 32px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 - 30);
+            // Particles Update
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
 
-                ctx.font = "18px Arial";
-                ctx.fillText(`Pontuação Final: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
-                ctx.fillText("Pressione [ESPAÇO] para Recomeçar", canvas.width / 2, canvas.height / 2 + 50);
-                ctx.textAlign = "left"; // resetar alinhamento
+            // Floating Texts Update
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                let ft = floatingTexts[i];
+                ft.y += ft.vy;
+                ft.alpha -= 0.02;
+                if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+            }
+
+            // Check Round Clear
+            if (enemiesToSpawn === 0 && enemies.length === 0) {
+                round++;
+                addFloatingText(`ROUND ${round} INICIADO!`, canvas.width / 2 - 50, canvas.height / 2, '#4ade80');
+                startRound();
             }
         }
 
-        function resetGame() {
-            score = 0;
-            lives = 3;
-            apples = [];
-            spawnTimer = 0;
-            gameOver = false;
+        /* -------------------------------------------------------------------------- */
+        /* CANVAS GRAPHICS & RENDERING                                               */
+        /* -------------------------------------------------------------------------- */
+        function draw() {
+            // Clear Background with Nature Grass Texture
+            ctx.fillStyle = '#1e3d1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Decorative Grass Leaves / Trees in Background
+            ctx.fillStyle = '#152e12';
+            for (let i = 0; i < canvas.width; i += 80) {
+                ctx.beginPath();
+                ctx.arc(i, 60, 40, 0, Math.PI * 2);
+                ctx.arc(i, canvas.height - 40, 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            if (gameState === 'PLAYING' || gameState === 'GAMEOVER') {
+                // Draw Aiming Line
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                ctx.lineTo(mouseX, mouseY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw Player (Nature Tree Defender)
+                ctx.save();
+                ctx.translate(player.x, player.y);
+
+                // Tree Trunk / Body
+                ctx.fillStyle = '#5c3d11';
+                ctx.beginPath();
+                ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Leaf Canopy Top
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.arc(-10, -10, player.radius * 0.8, 0, Math.PI * 2);
+                ctx.arc(10, -10, player.radius * 0.8, 0, Math.PI * 2);
+                ctx.arc(0, 10, player.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes / Face
+                const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+                const eyeDist = 12;
+                const eyeX = Math.cos(angle) * eyeDist;
+                const eyeY = Math.sin(angle) * eyeDist;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(eyeX - 8, eyeY - 4, 6, 0, Math.PI * 2);
+                ctx.arc(eyeX + 8, eyeY - 4, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(eyeX - 8, eyeY - 4, 3, 0, Math.PI * 2);
+                ctx.arc(eyeX + 8, eyeY - 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reload Progress Wheel around Player
+                if (player.isReloading) {
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, player.radius + 8, 0, Math.PI * 2 * player.reloadProgress);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+
+                // Draw Enemies (Lumberjacks)
+                const activeJackSkin = SKINS_DATA.lumberjack.find(l => l.id === playerData.activeSkins.lumberjack) || SKINS_DATA.lumberjack[0];
+
+                enemies.forEach(e => {
+                    ctx.save();
+                    ctx.translate(e.x, e.y);
+
+                    // Body / Plaid Shirt
+                    ctx.fillStyle = e.isBoss ? '#7f1d1d' : activeJackSkin.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#000000';
+                    ctx.stroke();
+
+                    // Hat / Cap
+                    ctx.fillStyle = activeJackSkin.hat;
+                    ctx.beginPath();
+                    ctx.arc(0, -e.radius * 0.4, e.radius * 0.8, Math.PI, 0);
+                    ctx.fill();
+
+                    // Beard
+                    ctx.fillStyle = '#78350f';
+                    ctx.beginPath();
+                    ctx.arc(0, e.radius * 0.2, e.radius * 0.6, 0, Math.PI);
+                    ctx.fill();
+
+                    // Axe
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillRect(-e.radius - 12, -10, 10, 20);
+
+                    // Health bar over Enemy head
+                    if (!e.isBoss) {
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                        ctx.fillRect(-20, -e.radius - 12, 40, 6);
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(-20, -e.radius - 12, (e.hp / e.maxHp) * 40, 6);
+                    }
+
+                    ctx.restore();
+                });
+
+                // Draw Seed Projectiles
+                projectiles.forEach(p => {
+                    ctx.save();
+                    if (p.glow) {
+                        ctx.shadowColor = p.glow;
+                        ctx.shadowBlur = 10;
+                    }
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Draw Particles
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Draw Floating Texts
+                floatingTexts.forEach(ft => {
+                    ctx.save();
+                    ctx.globalAlpha = ft.alpha;
+                    ctx.fillStyle = ft.color;
+                    ctx.font = 'bold 16px Fredoka';
+                    ctx.fillText(ft.text, ft.x, ft.y);
+                    ctx.restore();
+                });
+            }
         }
 
+        // Main Loop
         function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        gameLoop();
+        // Init Game on Window Load
+        window.onload = function() {
+            loadStorage();
+            requestAnimationFrame(gameLoop);
+        };
     </script>
 </body>
 </html>

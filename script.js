@@ -88,6 +88,24 @@ function toggleAudio() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* FULLSCREEN CONTROLLER                                                      */
+/* -------------------------------------------------------------------------- */
+function toggleFullscreen() {
+    const container = document.getElementById('game-container');
+    if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
 /* SHOP & PERSISTENCE DATA                                                   */
 /* -------------------------------------------------------------------------- */
 const SKINS_DATA = {
@@ -254,11 +272,65 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const container = document.getElementById('game-container');
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// Carregar Dados Salvos
+// Estado do Jogo
+let gameState = 'MENU';
+let score = 0;
+let round = 1;
+
+let player = {
+    x: 100,
+    y: canvas.height / 2,
+    moveUp: false,
+    moveDown: false,
+    moveLeft: false,
+    moveRight: false
+};
+
+// Eventos de Entrada
+window.addEventListener('keydown', (e) => {
+    if (gameState !== 'PLAYING') return;
+    const key = e.key.toLowerCase();
+    if (key === 'w' || key === 'arrowup') player.moveUp = true;
+    if (key === 's' || key === 'arrowdown') player.moveDown = true;
+    if (key === 'a' || key === 'arrowleft') player.moveLeft = true;
+    if (key === 'd' || key === 'arrowright') player.moveRight = true;
+    if (key === 'r') triggerReload();
+});
+
+window.addEventListener('keyup', (e) => {
+    const key = e.key.toLowerCase();
+    if (key === 'w' || key === 'arrowup') player.moveUp = false;
+    if (key === 's' || key === 'arrowdown') player.moveDown = false;
+    if (key === 'a' || key === 'arrowleft') player.moveLeft = false;
+    if (key === 'd' || key === 'arrowright') player.moveRight = false;
+});
+
+function triggerReload() {
+    sounds.playReload();
+}
+
+function startGame() {
+    sounds.init();
+    gameState = 'PLAYING';
+    document.getElementById('main-menu').classList.add('hidden');
+    document.getElementById('game-over-menu').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    resizeCanvas();
+}
+
+function returnToMenu() {
+    gameState = 'MENU';
+    document.getElementById('game-over-menu').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    document.getElementById('main-menu').classList.remove('hidden');
+}
+
+// Carregar Dados Salvos ao iniciar
 loadStorage();

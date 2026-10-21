@@ -10,15 +10,42 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    background-color: #1a2e1a;
+    background-color: #0d170d;
     color: #ffffff;
+    overflow-x: hidden;
+}
+
+/* Wrapper centralizador para o jogo */
+.game-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: calc(100vh - 120px); /* Desconta cabeçalho e rodapé */
+    padding: 20px 0;
 }
 
 #game-container {
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    max-width: 1280px;
+    height: 720px;
+    max-height: 85vh;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(74, 158, 63, 0.3);
+}
+
+/* Ajuste em tela cheia */
+#game-container:fullscreen,
+#game-container:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
 }
 
 canvas {

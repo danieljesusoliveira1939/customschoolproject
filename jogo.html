@@ -1,60 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MMORPG Online - Realm of Legends</title>
-  <link rel="stylesheet" href="jogo.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de História e Geografia</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="jogo.css">
 </head>
 <body>
 
-  <div id="game-container">
-    <!-- Header/Barra Status do Jogador -->
-    <header id="ui-header">
-      <div class="status-box">
-        <span id="player-name">Heroi</span> [Nv. <span id="player-level">1</span>]
-      </div>
-      <div class="bars-box">
-        <div class="bar-container">
-          <div id="hp-bar" class="bar hp"></div>
-          <span class="bar-text">HP: <span id="hp-text">100/100</span></span>
-        </div>
-        <div class="bar-container">
-          <div id="exp-bar" class="bar exp"></div>
-          <span class="bar-text">EXP: <span id="exp-text">0/100</span></span>
-        </div>
-      </div>
+    <header class="cabecalho-itens">
+        <nav class="navbar">
+            <div class="logo">Árvores Peculiares</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+                <li><a href="galeria.html">Árvores</a></li>
+                <li><a href="contato.html">Contato</a></li>
+                <li><a href="jogo.html">Jogo</a></li>
+            </ul>
+        </nav>
+        <h1 class="titulo_site">Árvores Peculiares</h1>
     </header>
 
-    <!-- Canvas principal do jogo -->
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <main class="quiz-container">
+        <div id="quiz-box">
+            <!-- Header do Quiz -->
+            <div class="quiz-header">
+                <span id="category-badge" class="badge">Categoria</span>
+                <span id="question-tracker">Pergunta 1/10</span>
+            </div>
 
-    <!-- Interface Inferior (Chat e Inventário) -->
-    <div id="ui-bottom">
-      <!-- Sistema de Chat MMO -->
-      <div id="chat-container">
-        <div id="chat-messages"></div>
-        <form id="chat-form">
-          <input type="text" id="chat-input" placeholder="Digite uma mensagem ou comando..." autocomplete="off" />
-          <button type="submit">Enviar</button>
-        </form>
-      </div>
+            <!-- Barra de Progresso -->
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
 
-      <!-- Painel de Inventário/Stats -->
-      <div id="inventory-container">
-        <h3>Inventário</h3>
-        <ul id="inventory-list">
-          <li>Petição de Vida x3</li>
-          <li>Espada de Madeira</li>
-        </ul>
-        <div id="stats-summary">
-          <p>Ataque: <span id="stat-atk">10</span></p>
-          <p>Ouro: <span id="stat-gold">0</span>G</p>
+            <!-- Pergunta -->
+            <h2 id="question-text">Bregando a pergunta...</h2>
+
+            <!-- Opções de Resposta -->
+            <div id="options-container" class="options-grid"></div>
+
+            <!-- Feedback -->
+            <div id="feedback-message" class="feedback hidden"></div>
+
+            <!-- Botão Próximo -->
+            <button id="next-btn" class="btn-primary hidden">Próxima Pergunta</button>
+
+            <!-- Tela Final de Resultado (Inicialmente escondida) -->
+            <div id="result-screen" class="hidden">
+                <h2>Quiz Concluído!</h2>
+                <div class="score-display">
+                    <p>Sua pontuação:</p>
+                    <span id="final-score">0 / 10</span>
+                </div>
+                <p id="result-message"></p>
+                <button id="restart-btn" class="btn-primary">Jogar Novamente</button>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
+    </main>
 
-  <script src="script.js"></script>
+    <footer class="escola">
+        <p>©2026 | criado por Daniel | Todos os Direitos Reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>

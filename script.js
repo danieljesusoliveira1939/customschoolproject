@@ -1,336 +1,246 @@
-/* -------------------------------------------------------------------------- */
-/* AUDIO SYNTHESIZER (Web Audio API)                                          */
-/* -------------------------------------------------------------------------- */
-class SoundSystem {
-    constructor() {
-        this.ctx = null;
-        this.enabled = true;
-    }
-
-    init() {
-        if (!this.ctx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioContext();
-        }
-    }
-
-    playShoot() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.1);
-    }
-
-    playReload() {
-        if (!this.enabled || !this.ctx) return;
-        for (let i = 0; i < 3; i++) {
-            setTimeout(() => {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(120 + Math.random() * 80, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.08);
-            }, i * 90);
-        }
-    }
-
-    playHit() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.12);
-    }
-
-    playBoss() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(90, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(180, this.ctx.currentTime + 0.4);
-        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.45);
-    }
-}
-
-const sounds = new SoundSystem();
-
-function toggleAudio() {
-    sounds.enabled = !sounds.enabled;
-    const btn = document.getElementById('sound-btn');
-    btn.innerText = sounds.enabled ? '🔊' : '🔇';
-}
-
-/* -------------------------------------------------------------------------- */
-/* FULLSCREEN CONTROLLER                                                      */
-/* -------------------------------------------------------------------------- */
-function toggleFullscreen() {
-    const container = document.getElementById('game-container');
-    if (!document.fullscreenElement) {
-        if (container.requestFullscreen) {
-            container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-            container.webkitRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-/* SHOP & PERSISTENCE DATA                                                   */
-/* -------------------------------------------------------------------------- */
-const SKINS_DATA = {
-    lumberjack: [
-        { id: 'classic', name: 'Lenhador Clássico', price: 0, color: '#dc2626', hat: '#991b1b', desc: 'O clássico cortador de árvores com camisa xadrez.' },
-        { id: 'viking', name: 'Lenhador Viking', price: 50, color: '#d97706', hat: '#92400e', desc: 'Barba ruiva e machado duplo nórdico!' },
-        { id: 'robot', name: 'Cyber Lenhador 3000', price: 120, color: '#0284c7', hat: '#38bdf8', desc: 'Mecânico e implacável com machado laser.' },
-        { id: 'fire', name: 'Lenhador de Fogo', price: 250, color: '#ea580c', hat: '#f97316', desc: 'Nascido nas brasas da floresta queimada.' }
-    ],
-    seed: [
-        { id: 'classic', name: 'Semente Tradicional', price: 0, color: '#78350f', glow: null, speed: 12, damage: 25, desc: 'Semente comum de maçã. Confiável.' },
-        { id: 'golden', name: 'Semente Dourada', price: 60, color: '#fbbf24', glow: '#fef08a', speed: 14, damage: 35, desc: '+10% Dano extra e tiro mais rápido!' },
-        { id: 'plasma', name: 'Semente de Plasma', price: 150, color: '#a855f7', glow: '#e9d5ff', speed: 16, damage: 45, desc: 'Energia concentrada para atravessar cascas!' },
-        { id: 'star', name: 'Semente Mágica Estelar', price: 300, color: '#38bdf8', glow: '#ffffff', speed: 18, damage: 60, desc: 'Poder cósmico natural devastador!' }
-    ],
-    apple: [
-        { id: 'red', name: 'Maçã Vermelha', price: 0, emoji: '🍎', maxAmmo: 10, color: '#ef4444', desc: 'Maçã standard suculenta. Cap: 10 sementes.' },
-        { id: 'green', name: 'Maçã Verde', price: 40, emoji: '🍏', maxAmmo: 12, color: '#22c55e', desc: 'Ácida e revitalizante! Cap: 12 sementes.' },
-        { id: 'gold', name: 'Maçã Dourada', price: 120, emoji: '🌟', maxAmmo: 15, color: '#eab308', desc: 'Rara e nutritiva. Cap: 15 sementes.' },
-        { id: 'crystal', name: 'Maçã de Cristal', price: 250, emoji: '💎', maxAmmo: 20, color: '#06b6d4', desc: 'Mística! Cap máxima de 20 sementes.' }
-    ]
-};
-
-let playerData = {
-    coins: 0,
-    highScore: 0,
-    unlockedSkins: {
-        lumberjack: ['classic'],
-        seed: ['classic'],
-        apple: ['red']
-    },
-    activeSkins: {
-        lumberjack: 'classic',
-        seed: 'classic',
-        apple: 'red'
-    }
-};
-
-function loadStorage() {
-    const saved = localStorage.getItem('apple_seed_defender_save');
-    if (saved) {
-        try {
-            const parsed = JSON.parse(saved);
-            playerData = { ...playerData, ...parsed };
-        } catch (e) {
-            console.error('Error loading save:', e);
-        }
-    }
-    updateMenuUI();
-}
-
-function saveStorage() {
-    localStorage.setItem('apple_seed_defender_save', JSON.stringify(playerData));
-    updateMenuUI();
-}
-
-function updateMenuUI() {
-    document.getElementById('menu-highscore').innerText = playerData.highScore;
-    document.getElementById('menu-coins-val').innerText = playerData.coins;
-    document.getElementById('shop-coins-val').innerText = playerData.coins;
-}
-
-/* -------------------------------------------------------------------------- */
-/* SHOP SYSTEM INTERACTION                                                    */
-/* -------------------------------------------------------------------------- */
-let currentShopTab = 'lumberjack';
-
-function openShop() {
-    sounds.init();
-    document.getElementById('shop-menu').classList.remove('hidden');
-    renderShopItems();
-}
-
-function closeShop() {
-    document.getElementById('shop-menu').classList.add('hidden');
-}
-
-function switchShopTab(tab) {
-    currentShopTab = tab;
-    ['lumberjack', 'seed', 'apple'].forEach(t => {
-        const btn = document.getElementById(`tab-${t}`);
-        if (t === tab) {
-            btn.className = "flex-1 py-2 rounded-xl font-bold text-sm bg-green-600 text-white border border-green-400/50";
-        } else {
-            btn.className = "flex-1 py-2 rounded-xl font-bold text-sm bg-black/40 text-gray-300 border border-white/10";
-        }
-    });
-    renderShopItems();
-}
-
-function renderShopItems() {
-    const container = document.getElementById('shop-items-container');
-    container.innerHTML = '';
-
-    const items = SKINS_DATA[currentShopTab];
-    const unlockedList = playerData.unlockedSkins[currentShopTab];
-    const activeId = playerData.activeSkins[currentShopTab];
-
-    items.forEach(item => {
-        const isUnlocked = unlockedList.includes(item.id);
-        const isActive = activeId === item.id;
-
-        const card = document.createElement('div');
-        card.className = `bg-black/40 border ${isActive ? 'border-amber-400' : 'border-white/10'} p-3 rounded-2xl flex flex-col justify-between`;
-
-        let visualDisplay = '';
-        if (currentShopTab === 'apple') {
-            visualDisplay = `<span class="text-4xl">${item.emoji}</span>`;
-        } else if (currentShopTab === 'seed') {
-            visualDisplay = `<div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center" style="background:${item.color}; box-shadow: 0 0 10px ${item.glow || item.color}"></div>`;
-        } else {
-            visualDisplay = `<div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xl" style="background:${item.color}">🪓</div>`;
-        }
-
-        card.innerHTML = `
-            <div class="flex items-center gap-3 mb-2">
-                <div class="p-2 bg-black/30 rounded-xl flex items-center justify-center min-w-[50px] min-h-[50px]">
-                    ${visualDisplay}
-                </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm">${item.name}</h3>
-                    <p class="text-[11px] text-gray-400 leading-tight">${item.desc}</p>
-                </div>
-            </div>
-            <div class="mt-2 pt-2 border-t border-white/5 flex justify-between items-center">
-                ${!isUnlocked ? `
-                    <span class="text-amber-400 font-bold text-xs flex items-center gap-1">🍎 ${item.price}</span>
-                    <button onclick="buySkin('${currentShopTab}', '${item.id}',${item.price})" class="btn-amber text-xs px-3 py-1.5 rounded-lg font-bold">Comprar</button>
-                ` : isActive ? `
-                    <span class="text-green-400 text-xs font-bold flex items-center gap-1">✓ Equipado</span>
-                    <button class="bg-gray-700 text-gray-400 text-xs px-3 py-1.5 rounded-lg font-bold cursor-default" disabled>Em Uso</button>
-                ` : `
-                    <span class="text-gray-400 text-xs">Adquirido</span>
-                    <button onclick="equipSkin('${currentShopTab}', '${item.id}')" class="btn-green text-xs px-3 py-1.5 rounded-lg font-bold">Equipar</button>
-                `}
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function buySkin(category, id, price) {
-    if (playerData.coins >= price) {
-        playerData.coins -= price;
-        playerData.unlockedSkins[category].push(id);
-        playerData.activeSkins[category] = id;
-        saveStorage();
-        renderShopItems();
-    } else {
-        alert("Maçãs insuficientes! Jogue mais rounds para ganhar maçãs.");
-    }
-}
-
-function equipSkin(category, id) {
-    playerData.activeSkins[category] = id;
-    saveStorage();
-    renderShopItems();
-}
-
-/* -------------------------------------------------------------------------- */
-/* GAME ENGINE & CANVAS RENDERER                                              */
-/* -------------------------------------------------------------------------- */
+// Configuração do Canvas
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-function resizeCanvas() {
-    const container = document.getElementById('game-container');
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+// Estado do Teclado
+const keys = {};
 
-// Estado do Jogo
-let gameState = 'MENU';
-let score = 0;
-let round = 1;
-
-let player = {
-    x: 100,
-    y: canvas.height / 2,
-    moveUp: false,
-    moveDown: false,
-    moveLeft: false,
-    moveRight: false
-};
-
-// Eventos de Entrada
 window.addEventListener('keydown', (e) => {
-    if (gameState !== 'PLAYING') return;
-    const key = e.key.toLowerCase();
-    if (key === 'w' || key === 'arrowup') player.moveUp = true;
-    if (key === 's' || key === 'arrowdown') player.moveDown = true;
-    if (key === 'a' || key === 'arrowleft') player.moveLeft = true;
-    if (key === 'd' || key === 'arrowright') player.moveRight = true;
-    if (key === 'r') triggerReload();
+  // Impede que a tela role com as setas ou espaço se não estiver focando o chat
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key) && document.activeElement.id !== 'chat-input') {
+    e.preventDefault();
+  }
+  keys[e.key] = true;
 });
 
 window.addEventListener('keyup', (e) => {
-    const key = e.key.toLowerCase();
-    if (key === 'w' || key === 'arrowup') player.moveUp = false;
-    if (key === 's' || key === 'arrowdown') player.moveDown = false;
-    if (key === 'a' || key === 'arrowleft') player.moveLeft = false;
-    if (key === 'd' || key === 'arrowright') player.moveRight = false;
+  keys[e.key] = false;
 });
 
-function triggerReload() {
-    sounds.playReload();
+// Entidades do Jogo
+const player = {
+  x: 400,
+  y: 250,
+  size: 24,
+  speed: 3,
+  color: '#3498db',
+  name: 'Heroi',
+  level: 1,
+  hp: 100,
+  maxHp: 100,
+  exp: 0,
+  maxExp: 100,
+  atk: 15,
+  gold: 0
+};
+
+// Outros jogadores simulados (Servidor MMO Simulado)
+const otherPlayers = [
+  { id: 1, name: 'Knight_99', x: 200, y: 150, color: '#e74c3c' },
+  { id: 2, name: 'Mage_Z', x: 600, y: 350, color: '#9b59b6' }
+];
+
+// Monstros/Inimigos
+const monsters = [
+  { id: 1, name: 'Goblin', x: 150, y: 300, size: 20, hp: 30, maxHp: 30, color: '#27ae60', expReward: 35, goldReward: 12 },
+  { id: 2, name: 'Orc', x: 550, y: 150, size: 28, hp: 60, maxHp: 60, color: '#d35400', expReward: 70, goldReward: 25 }
+];
+
+// Atualizar Interface gráfica do usuário (UI)
+function updateUI() {
+  document.getElementById('player-name').innerText = player.name;
+  document.getElementById('player-level').innerText = player.level;
+  document.getElementById('hp-text').innerText = `${player.hp}/${player.maxHp}`;
+  document.getElementById('exp-text').innerText = `${player.exp}/${player.maxExp}`;
+  document.getElementById('hp-bar').style.width = `${(player.hp / player.maxHp) * 100}%`;
+  document.getElementById('exp-bar').style.width = `${(player.exp / player.maxExp) * 100}%`;
+  document.getElementById('stat-atk').innerText = player.atk;
+  document.getElementById('stat-gold').innerText = player.gold;
 }
 
-function startGame() {
-    sounds.init();
-    gameState = 'PLAYING';
-    document.getElementById('main-menu').classList.add('hidden');
-    document.getElementById('game-over-menu').classList.add('hidden');
-    document.getElementById('hud').classList.remove('hidden');
-    resizeCanvas();
+// Movimentação do Jogador
+function updatePlayerPosition() {
+  // Não move o personagem se estiver digitando no chat
+  if (document.activeElement.id === 'chat-input') return;
+
+  if ((keys['ArrowUp'] || keys['w'] || keys['W']) && player.y > 0) {
+    player.y -= player.speed;
+  }
+  if ((keys['ArrowDown'] || keys['s'] || keys['S']) && player.y < canvas.height - player.size) {
+    player.y += player.speed;
+  }
+  if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && player.x > 0) {
+    player.x -= player.speed;
+  }
+  if ((keys['ArrowRight'] || keys['d'] || keys['D']) && player.x < canvas.width - player.size) {
+    player.x += player.speed;
+  }
+
+  // Ataque no Espaço
+  if (keys[' ']) {
+    checkAttack();
+    keys[' '] = false; // Garante 1 ataque por clique
+  }
 }
 
-function returnToMenu() {
-    gameState = 'MENU';
-    document.getElementById('game-over-menu').classList.add('hidden');
-    document.getElementById('hud').classList.add('hidden');
-    document.getElementById('main-menu').classList.remove('hidden');
+// Sistema de Combate Simples
+function checkAttack() {
+  monsters.forEach((monster) => {
+    if (monster.hp <= 0) return;
+
+    // Checa distância entre jogador e monstro
+    const dist = Math.hypot(player.x - monster.x, player.y - monster.y);
+    if (dist < 45) {
+      monster.hp -= player.atk;
+      addChatMessage('Sistema', `Você causou ${player.atk} de dano em ${monster.name}!`, 'system');
+
+      if (monster.hp <= 0) {
+        addChatMessage('Sistema', `Você derrotou ${monster.name}! Ganhou ${monster.expReward} EXP e ${monster.goldReward} ouro.`, 'system');
+        gainExperience(monster.expReward);
+        player.gold += monster.goldReward;
+        
+        // Respawn do Monstro após 4 segundos
+        setTimeout(() => {
+          monster.hp = monster.maxHp;
+          monster.x = Math.random() * (canvas.width - 50) + 25;
+          monster.y = Math.random() * (canvas.height - 50) + 25;
+        }, 4000);
+      }
+      updateUI();
+    }
+  });
 }
 
-// Carregar Dados Salvos ao iniciar
-loadStorage();
+// Ganhar Experiência e Subir de Nível
+function gainExperience(amount) {
+  player.exp += amount;
+  if (player.exp >= player.maxExp) {
+    player.level++;
+    player.exp -= player.maxExp;
+    player.maxExp = Math.floor(player.maxExp * 1.5);
+    player.maxHp += 20;
+    player.hp = player.maxHp;
+    player.atk += 5;
+    addChatMessage('Sistema', `PARABÉNS! Você alcançou o Nível ${player.level}!`, 'system');
+  }
+}
+
+// Desenhar Elementos na Tela (Render Loop)
+function draw() {
+  // Limpa o Canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Desenha Grade de Fundo (Estilo MMO Clássico)
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < canvas.width; x += 40) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += 40) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+
+  // Desenha Monstros
+  monsters.forEach((monster) => {
+    if (monster.hp > 0) {
+      ctx.fillStyle = monster.color;
+      ctx.fillRect(monster.x, monster.y, monster.size, monster.size);
+
+      // Nome do Monstro
+      ctx.fillStyle = '#fff';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(monster.name, monster.x + monster.size / 2, monster.y - 8);
+
+      // Barra de Vida do Monstro
+      ctx.fillStyle = '#c0392b';
+      ctx.fillRect(monster.x, monster.y - 6, monster.size, 4);
+      ctx.fillStyle = '#2ecc71';
+      ctx.fillRect(monster.x, monster.y - 6, (monster.hp / monster.maxHp) * monster.size, 4);
+    }
+  });
+
+  // Desenha Outros Jogadores
+  otherPlayers.forEach((p) => {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, player.size, player.size);
+
+    ctx.fillStyle = '#f1c40f';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.name, p.x + player.size / 2, p.y - 6);
+  });
+
+  // Desenha o Próprio Jogador
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(player.x, player.y, player.size, player.size);
+
+  // Nome do Próprio Jogador
+  ctx.fillStyle = '#3498db';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(player.name, player.x + player.size / 2, player.y - 6);
+}
+
+// Loop Principal do Jogo
+function gameLoop() {
+  updatePlayerPosition();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+// Sistema de Chat MMO
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
+
+function addChatMessage(author, text, type = 'user') {
+  const msgElement = document.createElement('div');
+  msgElement.classList.add('chat-msg');
+  if (type === 'system') msgElement.classList.add('system');
+
+  if (type === 'system') {
+    msgElement.innerText = `[${author}]: ${text}`;
+  } else {
+    msgElement.innerHTML = `<span class="author">${author}:</span> ${text}`;
+  }
+
+  chatMessages.appendChild(msgElement);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (text !== '') {
+    addChatMessage(player.name, text);
+    chatInput.value = '';
+  }
+});
+
+// Simulação de mensagens randômicas de outros jogadores na rede MMO
+setInterval(() => {
+  const randomMsg = [
+    'Alguém para matar o Orc?',
+    'Compro poções de vida!',
+    'Vendendo Espada de Madeira por 50G',
+    'Como faz para subir de nível rápido?'
+  ];
+  const randomPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+  const text = randomMsg[Math.floor(Math.random() * randomMsg.length)];
+  addChatMessage(randomPlayer.name, text);
+}, 12000);
+
+// Inicialização
+updateUI();
+addChatMessage('Sistema', 'Bem-vindo ao Realm of Legends! Use W, A, S, D ou as SETAS para se mover e ESPAÇO para atacar.', 'system');
+gameLoop();

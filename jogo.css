@@ -1,0 +1,104 @@
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+    font-family: 'Fredoka', cursive, sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1a2e1a;
+    color: #ffffff;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #2d5a27, #1e3d1a);
+}
+
+/* Glassmorphic UI styles */
+.glass-panel {
+    background: rgba(20, 35, 20, 0.85);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(74, 158, 63, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.btn-green {
+    background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+    border-bottom: 4px solid #15803d;
+    transition: all 0.1s ease;
+}
+.btn-green:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+.btn-green:active {
+    transform: translateY(2px);
+    border-bottom-width: 0px;
+    margin-top: 4px;
+}
+
+.btn-amber {
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    border-bottom: 4px solid #b45309;
+    transition: all 0.1s ease;
+}
+.btn-amber:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+.btn-amber:active {
+    transform: translateY(2px);
+    border-bottom-width: 0px;
+    margin-top: 4px;
+}
+
+.btn-red {
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+    border-bottom: 4px solid #991b1b;
+    transition: all 0.1s ease;
+}
+.btn-red:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+.btn-red:active {
+    transform: translateY(2px);
+    border-bottom-width: 0px;
+    margin-top: 4px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #4ade80;
+    border-radius: 4px;
+}
+
+/* Keyframe Animations */
+@keyframes pulse-reload {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+.reload-pulse {
+    animation: pulse-reload 0.8s infinite;
+}
